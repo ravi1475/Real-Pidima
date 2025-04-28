@@ -1,0 +1,57 @@
+/* Animation definitions */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Animation classes */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.4s ease-out forwards;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Transitions */
+.transition-all {
+  transition-property: all;
+}
+
+.duration-fast {
+  transition-duration: 150ms;
+}
+
+.duration-200 {
+  transition-duration: 200ms;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+/* Transform classes */
+.transform {
+  transform-origin: center;
+}
+
+/* These classes ensure the animations work properly with dark mode transitions */
+.dark .animate-fadeIn,
+.dark .animate-slideIn,
+.dark .animate-scaleIn {
+  animation-duration: 0.3s;
+} 

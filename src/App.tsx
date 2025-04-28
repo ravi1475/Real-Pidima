@@ -5,10 +5,12 @@ import Layout from './Layout/Layout'
 import { initializeDarkMode } from './utils/themeUtils'
 import './App.css'
 import Dashboard from './Components/Page'
+import Requirements from './Components/Requirements'
+import TestSpecs from './Components/TestSpecs'
 // Placeholder components for routes
 
-const Requirements = () => <div className="p-6">Requirements Page</div>
-const TestSpecs = () => <div className="p-6">Test Specifications Page</div>
+// const Requirements = () => <div className="p-6">Requirements Page</div>
+// const TestSpecs = () => <div className="p-6">Test Specifications Page</div>
 const TraceabilityMatrix = () => <div className="p-6">Traceability Matrix Page</div>
 const ImportExport = () => <div className="p-6">Import/Export Page</div>
 const Account = () => <div className="p-6">Account Settings Page</div>
