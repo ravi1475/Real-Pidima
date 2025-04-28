@@ -7,11 +7,12 @@ import './App.css'
 import Dashboard from './Components/Page'
 import Requirements from './Components/Requirements'
 import TestSpecs from './Components/TestSpecs'
+import TraceabilityMatrix from './Components/TraceabilityMatrix/TraceabilityMatrix'
 // Placeholder components for routes
 
 // const Requirements = () => <div className="p-6">Requirements Page</div>
 // const TestSpecs = () => <div className="p-6">Test Specifications Page</div>
-const TraceabilityMatrix = () => <div className="p-6">Traceability Matrix Page</div>
+// const TraceabilityMatrix = () => <div className="p-6">Traceability Matrix Page</div>
 const ImportExport = () => <div className="p-6">Import/Export Page</div>
 const Account = () => <div className="p-6">Account Settings Page</div>
 const AdminDashboard = () => <div className="p-6">Admin Dashboard Page</div>
