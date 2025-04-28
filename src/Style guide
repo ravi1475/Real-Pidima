@@ -1,0 +1,124 @@
+
+# PIDIMA Style Guide
+
+## Color System
+
+### Light Mode Colors
+- **Background:** #ffffff
+- **Foreground (Text):** #171717
+- **Card Background:** #f9fafb
+- **Card Border:** #e5e7eb
+- **Primary Button:** #4f46e5
+- **Primary Button Hover:** #4338ca
+- **Primary Button Text:** #ffffff
+- **Secondary Button:** #f3f4f6
+- **Secondary Button Hover:** #e5e7eb
+- **Secondary Button Text:** #1f2937
+- **Accent Color:** #10b981
+- **Accent Hover:** #059669
+- **Link:** #2563eb
+- **Link Hover:** #1d4ed8
+- **Success:** #22c55e
+- **Warning:** #f59e0b
+- **Notification/Error:** #ef4444
+
+### Dark Mode Colors
+- **Background:** #111827
+- **Foreground (Text):** #f3f4f6
+- **Card Background:** #1f2937
+- **Card Border:** #374151
+- **Primary Button:** #4f46e5
+- **Primary Button Hover:** #6366f1
+- **Primary Button Text:** #ffffff
+- **Secondary Button:** #374151
+- **Secondary Button Hover:** #4b5563
+- **Secondary Button Text:** #f9fafb
+- **Accent Color:** #10b981
+- **Accent Hover:** #34d399
+- **Link:** #60a5fa
+- **Link Hover:** #93c5fd
+- **Success:** #34d399
+- **Warning:** #fbbf24
+- **Notification/Error:** #ef4444
+
+## Typography
+
+- **Font Family:** Inter (primary), system UI fallbacks
+- **Base Font Size:** 16px
+- **Heading Sizes:**
+  - H1: 2rem (32px)
+  - H2: 1.5rem (24px)
+  - H3: 1.25rem (20px)
+  - H4: 1.125rem (18px)
+- **Font Weights:**
+  - Regular: 400
+  - Medium: 500
+  - Semibold: 600
+  - Bold: 700
+
+## Spacing
+
+- **Base spacing unit:** 0.25rem (4px)
+- **Common spacing values:**
+  - xs: 0.5rem (8px)
+  - sm: 1rem (16px)
+  - md: 1.5rem (24px)
+  - lg: 2rem (32px)
+  - xl: 3rem (48px)
+
+## Components
+
+### Buttons
+- **Primary Button:** Use for main actions
+- **Secondary Button:** Use for alternative actions
+- **Accent Button:** Use for highlighting specific actions
+
+### Cards
+- Use for containing related content
+- Apply consistent padding and rounded corners
+
+### Form Inputs
+- Consistent styling for text inputs, textareas, and selects
+- Clear focus states
+- Proper contrast between placeholder and input text
+
+### Tables
+- Consistent header styling
+- Alternating row colors for readability
+- Hover states for better interaction
+
+## Dark Mode Implementation
+
+- Uses CSS variables for theme colors
+- Theme toggle accessible via ThemeProvider
+- Automatically respects user system preferences
+- Persists preference in localStorage
+
+## Animations
+
+- **Fade In:** Used for content transitions
+- **Smooth transitions:** For theme changes and interactive elements
+
+## Layout Components
+
+- **Container:** Centered content with max width
+- **Grid Layout:** Responsive grid system
+- **Responsive Flexbox:** For complex layouts
+
+## Accessibility Guidelines
+
+1. Use semantic HTML elements
+2. Ensure proper color contrast (WCAG AA compliance)
+3. Include proper ARIA labels for interactive elements
+4. Support keyboard navigation 
+5. Provide focus indicators for interactive elements
+6. Use appropriate alt text for images
+
+## Best Practices
+
+1. Use CSS variables for theme values
+2. Always use predefined color and spacing values
+3. Follow mobile-first responsive design
+4. Test components in both light and dark mode
+5. Use transitions for theme changes
+6. Maintain consistent spacing throughout the interface

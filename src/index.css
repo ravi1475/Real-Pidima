@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "tailwindcss";
+
+:root {
+  /* Font settings from style guide */
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-size: 16px;
+
+  /* CSS Variables for theme colors will be set via JS */
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --color-card-bg: #f9fafb;
+  --color-card-border: #e5e7eb;
+  --color-primary-button: #4f46e5;
+  --color-primary-button-hover: #4338ca;
+  --color-primary-button-text: #ffffff;
+  --color-secondary-button: #f3f4f6;
+  --color-secondary-button-hover: #e5e7eb;
+  --color-secondary-button-text: #1f2937;
+  --color-accent: #10b981;
+  --color-accent-hover: #059669;
+  --color-link: #2563eb;
+  --color-link-hover: #1d4ed8;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Animation durations */
+  --transition-fast: 150ms;
+  --transition-normal: 200ms;
+  --transition-slow: 300ms;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark mode overrides */
+.dark {
+  --color-background: #111827;
+  --color-foreground: #f3f4f6;
+  --color-card-bg: #1f2937;
+  --color-card-border: #374151;
+  --color-primary-button: #4f46e5;
+  --color-primary-button-hover: #6366f1;
+  --color-primary-button-text: #ffffff;
+  --color-secondary-button: #374151;
+  --color-secondary-button-hover: #4b5563;
+  --color-secondary-button-text: #f9fafb;
+  --color-accent: #10b981;
+  --color-accent-hover: #34d399;
+  --color-link: #60a5fa;
+  --color-link-hover: #93c5fd;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error: #ef4444;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+  transition: background-color var(--transition-normal) ease, color var(--transition-normal) ease;
+}
+
+/* Explicit dark mode for body and main areas */
+body.dark-mode {
+  background-color: #111827 !important;
+  color: #f3f4f6 !important;
+}
+
+body.dark-mode header {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+body.dark-mode .bg-white {
+  background-color: #1f2937 !important;
+}
+
+body.dark-mode .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+body.dark-mode .border-gray-200 {
+  border-color: #374151 !important;
+}
+
+body.dark-mode .shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Force dark mode class */
+.force-dark-mode {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2rem; /* 32px */
+}
+
+h2 {
+  font-size: 1.5rem; /* 24px */
+}
+
+h3 {
+  font-size: 1.25rem; /* 20px */
+}
+
+h4 {
+  font-size: 1.125rem; /* 18px */
+}
+
+a {
+  font-weight: 500;
+  color: var(--color-link);
+  text-decoration: none;
+  transition: color var(--transition-fast) ease;
+}
+
+a:hover {
+  color: var(--color-link-hover);
+}
+
+/* Base button styles */
+button {
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--color-primary-button);
+  outline-offset: 2px;
+}
+
+/* Primary button */
+.btn-primary {
+  background-color: var(--color-primary-button);
+  color: var(--color-primary-button-text);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-button-hover);
+}
+
+/* Secondary button */
+.btn-secondary {
+  background-color: var(--color-secondary-button);
+  color: var(--color-secondary-button-text);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary-button-hover);
+}
+
+/* Animation classes */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

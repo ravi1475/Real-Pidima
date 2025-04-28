@@ -1,0 +1,130 @@
+// Theme utility functions based on the Pidima Style Guide
+
+// Define theme color variables based on the style guide
+const setupThemeVariables = () => {
+  const root = document.documentElement;
+  const isDark = isDarkModeEnabled();
+  
+  // Light mode colors
+  if (!isDark) {
+    // Apply light mode colors
+    root.style.setProperty('--color-background', '#ffffff');
+    root.style.setProperty('--color-foreground', '#171717');
+    root.style.setProperty('--color-card-bg', '#f9fafb');
+    root.style.setProperty('--color-card-border', '#e5e7eb');
+    root.style.setProperty('--color-primary-button', '#4f46e5');
+    root.style.setProperty('--color-primary-button-hover', '#4338ca');
+    root.style.setProperty('--color-primary-button-text', '#ffffff');
+    root.style.setProperty('--color-secondary-button', '#f3f4f6');
+    root.style.setProperty('--color-secondary-button-hover', '#e5e7eb');
+    root.style.setProperty('--color-secondary-button-text', '#1f2937');
+    root.style.setProperty('--color-accent', '#10b981');
+    root.style.setProperty('--color-accent-hover', '#059669');
+    root.style.setProperty('--color-link', '#2563eb');
+    root.style.setProperty('--color-link-hover', '#1d4ed8');
+    root.style.setProperty('--color-success', '#22c55e');
+    root.style.setProperty('--color-warning', '#f59e0b');
+    root.style.setProperty('--color-error', '#ef4444');
+    
+    // Apply direct styles to body and main elements for more visible changes
+    document.body.style.backgroundColor = '#ffffff';
+    document.body.style.color = '#171717';
+  } 
+  // Dark mode colors
+  else {
+    // Apply dark mode colors
+    root.style.setProperty('--color-background', '#111827');
+    root.style.setProperty('--color-foreground', '#f3f4f6');
+    root.style.setProperty('--color-card-bg', '#1f2937');
+    root.style.setProperty('--color-card-border', '#374151');
+    root.style.setProperty('--color-primary-button', '#4f46e5');
+    root.style.setProperty('--color-primary-button-hover', '#6366f1');
+    root.style.setProperty('--color-primary-button-text', '#ffffff');
+    root.style.setProperty('--color-secondary-button', '#374151');
+    root.style.setProperty('--color-secondary-button-hover', '#4b5563');
+    root.style.setProperty('--color-secondary-button-text', '#f9fafb');
+    root.style.setProperty('--color-accent', '#10b981');
+    root.style.setProperty('--color-accent-hover', '#34d399');
+    root.style.setProperty('--color-link', '#60a5fa');
+    root.style.setProperty('--color-link-hover', '#93c5fd');
+    root.style.setProperty('--color-success', '#34d399');
+    root.style.setProperty('--color-warning', '#fbbf24');
+    root.style.setProperty('--color-error', '#ef4444');
+    
+    // Apply direct styles to body and main elements for more visible changes
+    document.body.style.backgroundColor = '#111827';
+    document.body.style.color = '#f3f4f6';
+  }
+  
+  // Force all cards to update
+  const cards = document.querySelectorAll('.card, .bg-white, .bg-gray-50, .bg-gray-100, [class*="bg-"]');
+  cards.forEach(card => {
+    if (isDark) {
+      (card as HTMLElement).classList.add('force-dark-mode');
+    } else {
+      (card as HTMLElement).classList.remove('force-dark-mode');
+    }
+  });
+};
+
+// Check if dark mode is enabled based on localStorage or system preference
+export const isDarkModeEnabled = (): boolean => {
+  return (
+    localStorage.getItem('theme') === 'dark' ||
+    (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  );
+};
+
+// Apply dark mode to the document
+export const applyDarkMode = (isDark: boolean): void => {
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark-mode');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem('theme', 'light');
+  }
+  
+  // Update CSS variables based on the current theme
+  setupThemeVariables();
+  
+  // Force repaint to ensure theme changes are visible
+  document.body.style.display = 'none';
+  setTimeout(() => {
+    document.body.style.display = '';
+  }, 5);
+};
+
+// Toggle dark mode
+export const toggleDarkMode = (): boolean => {
+  const currentMode = isDarkModeEnabled();
+  const newMode = !currentMode;
+  applyDarkMode(newMode);
+  
+  // Dispatch a custom event that components can listen for
+  window.dispatchEvent(new CustomEvent('themechange', { detail: { isDarkMode: newMode } }));
+  
+  console.log('Theme changed to:', newMode ? 'dark' : 'light');
+  
+  return newMode;
+};
+
+// Initialize dark mode
+export const initializeDarkMode = (): void => {
+  applyDarkMode(isDarkModeEnabled());
+  setupThemeVariables();
+  
+  // Add listener for system preference changes
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const handleSystemPreferenceChange = (e: MediaQueryListEvent) => {
+    // Only update if user hasn't manually set a preference
+    if (localStorage.getItem('theme') === null) {
+      applyDarkMode(e.matches);
+      window.dispatchEvent(new CustomEvent('themechange', { detail: { isDarkMode: e.matches } }));
+    }
+  };
+  
+  mediaQuery.addEventListener('change', handleSystemPreferenceChange);
+}; 
