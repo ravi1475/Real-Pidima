@@ -4,9 +4,9 @@ import SignIn from './Auth Services/SignIn'
 import Layout from './Layout/Layout'
 import { initializeDarkMode } from './utils/themeUtils'
 import './App.css'
-
+import Dashboard from './Components/Page'
 // Placeholder components for routes
-const Dashboard = () => <div className="p-6">Dashboard Page</div>
+
 const Requirements = () => <div className="p-6">Requirements Page</div>
 const TestSpecs = () => <div className="p-6">Test Specifications Page</div>
 const TraceabilityMatrix = () => <div className="p-6">Traceability Matrix Page</div>

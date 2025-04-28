@@ -6,7 +6,6 @@ import Footer from './Footer';
 import { isDarkModeEnabled } from '../utils/themeUtils';
 
 const Layout: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(isDarkModeEnabled());
   const location = useLocation();
@@ -15,7 +14,6 @@ const Layout: React.FC = () => {
   useEffect(() => {
     // Check if user is authenticated from localStorage
     const authToken = localStorage.getItem('authToken');
-    setIsAuthenticated(!!authToken);
     
     // Redirect unauthenticated users to login if trying to access protected routes
     if (!authToken && !location.pathname.includes('/auth/')) {
