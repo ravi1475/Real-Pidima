@@ -1,19 +1,82 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaFilter, FaSort, FaSpinner, FaLock, FaUnlock, FaEdit, FaTimes, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaSort, FaSpinner, FaLock, FaUnlock, FaTimes, FaAngleLeft, FaAngleRight, FaExclamationTriangle } from 'react-icons/fa';
 import { isDarkModeEnabled } from '../utils/themeUtils';
 import './animations.css';
+import { apiService } from '../services/ApiService';
+
+// Define types for our API data
+interface TestCase {
+  id: string;
+  title: string;
+  description: string;
+  projectId: string;
+  steps: string;
+  expectedResult: string;
+  status?: string;
+}
+
+// API constants
+const PROJECT_ID = '1'; // Fixed project ID for now
+
+// API operations using our centralized service
+const api = {
+  // Get test cases for a project
+  getTestCases: async (): Promise<TestCase[]> => {
+    try {
+      return await apiService.testCases.getAll(PROJECT_ID);
+    } catch (error) {
+      console.error('Failed to fetch test cases:', error);
+      throw error;
+    }
+  },
+  
+  // Create a new test case
+  createTestCase: async (testCase: Omit<TestCase, 'id'>): Promise<TestCase> => {
+    try {
+      // Log the request payload for debugging
+      console.log('Creating test case with payload:', testCase);
+      
+      return await apiService.testCases.create(testCase);
+    } catch (error) {
+      console.error('Failed to create test case:', error);
+      throw error;
+    }
+  },
+  
+  // Update an existing test case
+  updateTestCase: async (testCase: TestCase): Promise<TestCase> => {
+    try {
+      return await apiService.testCases.update(testCase.id, testCase);
+    } catch (error) {
+      console.error('Failed to update test case:', error);
+      throw error;
+    }
+  },
+  
+  // Delete a test case
+  deleteTestCase: async (id: string): Promise<void> => {
+    try {
+      await apiService.testCases.delete(id);
+    } catch (error) {
+      console.error('Failed to delete test case:', error);
+      throw error;
+    }
+  },
+};
 
 const TestSpecs: React.FC = () => {
   const [, setIsDarkMode] = useState(isDarkModeEnabled());
   const [isLoading, setIsLoading] = useState(false);
-  const [tests, setTests] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [tests, setTests] = useState<TestCase[]>([]);
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
   const [isTableLocked, setIsTableLocked] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [currentTest, setCurrentTest] = useState<any>(null);
+  const [currentTest, setCurrentTest] = useState<TestCase | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
 
   // Listen for theme changes
   useEffect(() => {
@@ -27,62 +90,25 @@ const TestSpecs: React.FC = () => {
     };
   }, []);
 
-  // Mock data for demonstration
-  useEffect(() => {
-    const mockData = [
-      { 
-        id: 'TC-001', 
-        description: 'Verify user login with valid credentials',
-        preconditions: 'User has an active account in the system',
-        steps: ['Navigate to login page', 'Enter valid username', 'Enter valid password', 'Click login button'],
-        expectedOutcome: 'User is successfully logged in and redirected to dashboard',
-        classification: 'Functional',
-        module: 'Authentication'
-      },
-      { 
-        id: 'TC-002', 
-        description: 'Verify user login with invalid credentials',
-        preconditions: 'User has an active account in the system',
-        steps: ['Navigate to login page', 'Enter invalid username', 'Enter invalid password', 'Click login button'],
-        expectedOutcome: 'User receives "Invalid credentials" error message',
-        classification: 'Functional',
-        module: 'Authentication'
-      },
-      { 
-        id: 'TC-003', 
-        description: 'Verify requirements can be exported to CSV',
-        preconditions: 'User is logged in with admin privileges',
-        steps: ['Navigate to Requirements page', 'Click Export button', 'Select CSV format', 'Confirm export'],
-        expectedOutcome: 'CSV file with all requirements is downloaded',
-        classification: 'Functional',
-        module: 'Export'
-      },
-      { 
-        id: 'TC-004', 
-        description: 'Verify system handles high user load',
-        preconditions: 'Test environment with load testing tools configured',
-        steps: ['Configure load test for 1000 concurrent users', 'Run test for 1 hour', 'Monitor system performance'],
-        expectedOutcome: 'System maintains response time under 2 seconds with 1000 concurrent users',
-        classification: 'Performance',
-        module: 'System'
-      },
-      { 
-        id: 'TC-005', 
-        description: 'Verify password reset functionality',
-        preconditions: 'User has an active account in the system',
-        steps: ['Navigate to login page', 'Click "Forgot Password" link', 'Enter registered email', 'Click Submit', 'Check email for reset link', 'Click reset link', 'Enter new password', 'Confirm new password'],
-        expectedOutcome: 'Password is reset successfully and user can login with new password',
-        classification: 'Functional',
-        module: 'Authentication'
-      }
-    ];
-    
+  // Load test cases from API
+  const loadTestCases = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setTests(mockData);
-      setTotalPages(Math.ceil(mockData.length / 10)); // Assuming 10 items per page
+    setError(null);
+    
+    try {
+      const data = await api.getTestCases();
+      setTests(data);
+      setTotalPages(Math.ceil(data.length / itemsPerPage));
+    } catch (err) {
+      setError('Failed to load test cases. Please try again later.');
+      console.error('Error loading test cases:', err);
+    } finally {
       setIsLoading(false);
-    }, 1200); // Simulate loading
+    }
+  };
+
+  useEffect(() => {
+    loadTestCases();
   }, []);
 
   const handleTestSelection = (testId: string) => {
@@ -101,7 +127,7 @@ const TestSpecs: React.FC = () => {
     }
   };
 
-  const handleEditTest = (test: any) => {
+  const handleEditTest = (test: TestCase) => {
     setCurrentTest(test);
     setShowDetailModal(true);
   };
@@ -109,51 +135,128 @@ const TestSpecs: React.FC = () => {
   const handleAddTest = () => {
     setCurrentTest({
       id: '',
+      title: '',
       description: '',
-      preconditions: '',
-      steps: [],
-      expectedOutcome: '',
-      classification: 'Functional',
-      module: ''
+      projectId: PROJECT_ID,
+      steps: '',
+      expectedResult: '',
+      status: 'NOT_RUN' // Set a default status
     });
     setShowAddModal(true);
   };
 
-  const handleDeleteSelected = () => {
-    setTests(tests.filter(test => !selectedTests.includes(test.id)));
-    setSelectedTests([]);
+  const handleDeleteSelected = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Delete all selected test cases
+      const deletePromises = selectedTests.map(id => api.deleteTestCase(id));
+      await Promise.all(deletePromises);
+      
+      // Refresh the list
+      await loadTestCases();
+      setSelectedTests([]);
+    } catch (err) {
+      setError('Failed to delete test cases. Please try again later.');
+      console.error('Error deleting test cases:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const FilterPopover = () => (
-    <div className="relative">
-      <button 
-        className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200"
-      >
-        <FaFilter />
-      </button>
-      {/* Filter popover content would go here */}
-    </div>
-  );
+  const handleSaveTest = async () => {
+    if (!currentTest) return;
+    
+    // Validate required fields
+    if (!currentTest.title.trim()) {
+      setError('Title is required');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      if (showAddModal) {
+        // Create new test case - ensure data structure matches API expectations
+        const { id, ...testWithoutId } = currentTest;
+        
+        // Ensure steps and expectedResult are properly formatted
+        const testData = {
+          ...testWithoutId,
+          steps: testWithoutId.steps.trim() || 'No steps provided',
+          expectedResult: testWithoutId.expectedResult.trim() || 'No expected results provided'
+        };
+        
+        await api.createTestCase(testData);
+      } else {
+        // Update existing test case
+        await api.updateTestCase(currentTest);
+      }
+      
+      // Refresh the list
+      await loadTestCases();
+      setShowDetailModal(false);
+      setShowAddModal(false);
+    } catch (err: any) {
+      // Improved error handling with more specific messages
+      if (err.message.includes('401')) {
+        setError('Authentication error. Please log in again.');
+      } else if (err.message.includes('400')) {
+        setError('Invalid test case data. Please check your input and try again.');
+      } else {
+        setError(`Failed to ${showAddModal ? 'create' : 'update'} test case. ${err.message || 'Please try again later.'}`);
+      }
+      console.error(`Error ${showAddModal ? 'creating' : 'updating'} test case:`, err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to split steps or expected results into an array
+  const splitToArray = (text: string): string[] => {
+    if (!text) return [];
+    return text.split('\n').filter(Boolean);
+  };
+
+  // Helper function to join array to string with newline separators
+  const joinToString = (arr: string[]): string => {
+    return arr.join('\n');
+  };
 
   const ListInput: React.FC<{
-    value: string[];
-    onChange: (value: string[]) => void;
+    value: string;
+    onChange: (value: string) => void;
     placeholder?: string;
     disabled?: boolean;
   }> = ({ value, onChange, placeholder, disabled = false }) => {
+    // Split the string into an array for display and editing
+    const [items, setItems] = useState<string[]>(splitToArray(value));
     const [inputValue, setInputValue] = useState('');
+
+    // Update parent when items change
+    useEffect(() => {
+      onChange(joinToString(items));
+    }, [items, onChange]);
+
+    // Update local state when value prop changes
+    useEffect(() => {
+      setItems(splitToArray(value));
+    }, [value]);
 
     const handleAddItem = () => {
       if (inputValue.trim()) {
-        onChange([...value, inputValue.trim()]);
+        const newItems = [...items, inputValue.trim()];
+        setItems(newItems);
         setInputValue('');
       }
     };
 
     const handleRemoveItem = (index: number) => {
-      const newList = [...value];
-      newList.splice(index, 1);
-      onChange(newList);
+      const newItems = [...items];
+      newItems.splice(index, 1);
+      setItems(newItems);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -184,7 +287,7 @@ const TestSpecs: React.FC = () => {
           </button>
         </div>
         <ul className="space-y-1">
-          {value.map((item, index) => (
+          {items.map((item, index) => (
             <li key={index} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
               <span className="text-gray-700 dark:text-gray-300">{`${index + 1}. ${item}`}</span>
               {!disabled && (
@@ -202,6 +305,13 @@ const TestSpecs: React.FC = () => {
     );
   };
 
+  const formatList = (text: string): string => {
+    if (!text) return '';
+    return splitToArray(text)
+      .map((item, index) => `${index + 1}. ${item}`)
+      .join(' ');
+  };
+
   const TestDetailModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-4/5 max-w-4xl shadow-2xl border border-gray-200 dark:border-gray-700 transform transition-transform duration-300 max-h-[90vh] overflow-y-auto">
@@ -213,12 +323,21 @@ const TestSpecs: React.FC = () => {
             onClick={() => {
               setShowDetailModal(false);
               setShowAddModal(false);
+              setError(null); // Clear any errors when closing
             }}
             className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 p-1 rounded-full"
           >
             <FaTimes />
           </button>
         </div>
+        
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 flex items-center">
+            <FaExclamationTriangle className="mr-2" />
+            <span>{error}</span>
+          </div>
+        )}
+        
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -226,18 +345,22 @@ const TestSpecs: React.FC = () => {
               <input 
                 type="text" 
                 value={currentTest?.id || ''}
-                disabled={!showAddModal}
+                disabled={true} // Always disabled, as ID is generated by API
                 className="w-full rounded-md p-2 border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono"
-                placeholder="TC-XXX"
+                placeholder="Generated automatically"
               />
             </div>
             <div>
-              <label className="block text-gray-700 dark:text-gray-300 mb-2">Module</label>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">
+                Title <span className="text-red-500">*</span>
+              </label>
               <input 
                 type="text" 
-                value={currentTest?.module || ''}
+                value={currentTest?.title || ''}
+                onChange={(e) => setCurrentTest(curr => curr ? {...curr, title: e.target.value} : null)}
                 className="w-full rounded-md p-2 border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                placeholder="Module Name"
+                placeholder="Test title"
+                required
               />
             </div>
           </div>
@@ -245,52 +368,44 @@ const TestSpecs: React.FC = () => {
             <label className="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
             <textarea 
               value={currentTest?.description || ''}
+              onChange={(e) => setCurrentTest(curr => curr ? {...curr, description: e.target.value} : null)}
               className="w-full resize-none rounded-md p-2 border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               placeholder="Detailed description of the test"
               rows={3}
             />
           </div>
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Preconditions</label>
-            <textarea 
-              value={currentTest?.preconditions || ''}
-              className="w-full resize-none rounded-md p-2 border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Conditions that must be met before test execution"
-              rows={2}
-            />
-          </div>
-          <div>
             <label className="block text-gray-700 dark:text-gray-300 mb-2">Steps</label>
             <ListInput 
-              value={currentTest?.steps || []}
-              onChange={(steps) => setCurrentTest({...currentTest, steps})}
+              value={currentTest?.steps || ''}
+              onChange={(steps) => setCurrentTest(curr => curr ? {...curr, steps} : null)}
               placeholder="Add a step and press Enter"
             />
           </div>
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Expected Outcome</label>
-            <textarea 
-              value={currentTest?.expectedOutcome || ''}
-              className="w-full resize-none rounded-md p-2 border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="What should happen when test is executed successfully"
-              rows={3}
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Expected Result</label>
+            <ListInput 
+              value={currentTest?.expectedResult || ''}
+              onChange={(expectedResult) => setCurrentTest(curr => curr ? {...curr, expectedResult} : null)}
+              placeholder="Add an expected outcome and press Enter"
             />
           </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Classification</label>
-            <select 
-              value={currentTest?.classification || 'Functional'}
-              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-            >
-              <option>Functional</option>
-              <option>Performance</option>
-              <option>Security</option>
-              <option>Usability</option>
-              <option>Compatibility</option>
-              <option>Integration</option>
-              <option>Regression</option>
-            </select>
-          </div>
+          {!showAddModal && (
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Status</label>
+              <select
+                value={currentTest?.status || ''}
+                onChange={(e) => setCurrentTest(curr => curr ? {...curr, status: e.target.value} : null)}
+                className="w-full rounded-md p-2 border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="">Select Status</option>
+                <option value="PASSED">Passed</option>
+                <option value="FAILED">Failed</option>
+                <option value="BLOCKED">Blocked</option>
+                <option value="NOT_RUN">Not Run</option>
+              </select>
+            </div>
+          )}
         </div>
         <div className="flex justify-end mt-6">
           <button 
@@ -302,20 +417,31 @@ const TestSpecs: React.FC = () => {
           >
             Cancel
           </button>
-          <button className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-            Save Test
+          <button 
+            onClick={handleSaveTest}
+            disabled={isLoading}
+            className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            {isLoading ? <FaSpinner className="animate-spin" /> : 'Save Test'}
           </button>
         </div>
       </div>
     </div>
   );
 
+  // Get current page of tests
+  const getCurrentPageData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return tests.slice(startIndex, endIndex);
+  };
+
   const renderPagination = () => (
     <div className="flex items-center justify-between border-t dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 rounded-b-xl">
       <div className="flex items-center">
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          Showing <span className="font-medium">{tests.length > 0 ? (currentPage - 1) * 10 + 1 : 0}</span> to{' '}
-          <span className="font-medium">{Math.min(currentPage * 10, tests.length)}</span> of{' '}
+          Showing <span className="font-medium">{tests.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}</span> to{' '}
+          <span className="font-medium">{Math.min(currentPage * itemsPerPage, tests.length)}</span> of{' '}
           <span className="font-medium">{tests.length}</span> results
         </p>
       </div>
@@ -340,6 +466,8 @@ const TestSpecs: React.FC = () => {
     </div>
   );
 
+  const currentPageData = getCurrentPageData();
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header Section */}
@@ -362,15 +490,17 @@ const TestSpecs: React.FC = () => {
           {selectedTests.length > 0 && (
             <button 
               onClick={handleDeleteSelected}
-              className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center"
+              disabled={isLoading}
+              className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center disabled:opacity-50"
             >
-              <FaTrash className="mr-2" />
+              {isLoading ? <FaSpinner className="animate-spin mr-2" /> : <FaTrash className="mr-2" />}
               Delete Selected
             </button>
           )}
           <button 
             onClick={handleAddTest}
-            className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center"
+            disabled={isLoading}
+            className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center disabled:opacity-50"
           >
             <FaPlus className="mr-2" />
             Add Test
@@ -378,11 +508,30 @@ const TestSpecs: React.FC = () => {
         </div>
       </div>
       
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 flex items-center">
+          <FaExclamationTriangle className="mr-2" />
+          <span>{error}</span>
+        </div>
+      )}
+      
       {/* Main Content */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
-        {isLoading ? (
+        {isLoading && tests.length === 0 ? (
           <div className="flex justify-center items-center py-20">
             <FaSpinner className="animate-spin text-4xl text-blue-500 dark:text-blue-400" />
+          </div>
+        ) : tests.length === 0 && !isLoading ? (
+          <div className="flex flex-col justify-center items-center py-20 text-gray-500 dark:text-gray-400">
+            <p className="mb-4">No test cases found</p>
+            <button 
+              onClick={handleAddTest}
+              className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center"
+            >
+              <FaPlus className="mr-2" />
+              Add your first test case
+            </button>
           </div>
         ) : (
           <>
@@ -406,29 +555,29 @@ const TestSpecs: React.FC = () => {
                     </th>
                     <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">
                       <div className="flex items-center">
-                        Description
+                        Title
                         <FaSort className="ml-1 text-gray-400" />
                       </div>
                     </th>
                     <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">
                       <div className="flex items-center">
-                        Preconditions
-                        <FilterPopover />
+                        Description
+                        <FaSort className="ml-1 text-gray-400" />
                       </div>
                     </th>
                     <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">
-                      <div className="flex items-center">
-                        Module
-                        <FilterPopover />
-                      </div>
+                      Steps
                     </th>
-                    <th className="border border-gray-200 dark:border-gray-700 p-2 text-center w-24">
-                      Actions
+                    <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">
+                      Expected Result
+                    </th>
+                    <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">
+                      Status
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {tests.map((test) => (
+                  {currentPageData.map((test) => (
                     <tr key={test.id} className="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-150">
                       <td className="border border-gray-200 dark:border-gray-700 p-2 text-center">
                         <input 
@@ -438,17 +587,30 @@ const TestSpecs: React.FC = () => {
                           className="rounded dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-blue-500 focus:ring-blue-500"
                         />
                       </td>
-                      <td className="border border-gray-200 dark:border-gray-700 p-2 font-mono">{test.id}</td>
-                      <td className="border border-gray-200 dark:border-gray-700 p-2 font-medium">{test.description}</td>
-                      <td className="border border-gray-200 dark:border-gray-700 p-2">{test.preconditions}</td>
-                      <td className="border border-gray-200 dark:border-gray-700 p-2">{test.module}</td>
-                      <td className="border border-gray-200 dark:border-gray-700 p-2 text-center">
-                        <button 
-                          onClick={() => handleEditTest(test)}
-                          className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1"
-                        >
-                          <FaEdit />
-                        </button>
+                      <td className="border border-gray-200 dark:border-gray-700 p-2 font-mono text-blue-500 cursor-pointer hover:underline" onClick={() => handleEditTest(test)}>
+                        {test.id.substring(0, 8)}...
+                      </td>
+                      <td className="border border-gray-200 dark:border-gray-700 p-2 font-medium">
+                        {test.title}
+                      </td>
+                      <td className="border border-gray-200 dark:border-gray-700 p-2">
+                        {test.description}
+                      </td>
+                      <td className="border border-gray-200 dark:border-gray-700 p-2">
+                        {formatList(test.steps)}
+                      </td>
+                      <td className="border border-gray-200 dark:border-gray-700 p-2">
+                        {formatList(test.expectedResult)}
+                      </td>
+                      <td className="border border-gray-200 dark:border-gray-700 p-2">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          test.status === 'PASSED' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' :
+                          test.status === 'FAILED' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' :
+                          test.status === 'BLOCKED' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300'
+                        }`}>
+                          {test.status || 'NOT_RUN'}
+                        </span>
                       </td>
                     </tr>
                   ))}

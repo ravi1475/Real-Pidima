@@ -38,7 +38,6 @@ const Header: React.FC = () => {
   const handleToggleDarkMode = () => {
     const newMode = toggleDarkMode();
     setIsDarkMode(newMode);
-    console.log("Theme toggled in header:", newMode ? "dark" : "light");
   };
   
   const handleSignOut = () => {
@@ -51,13 +50,21 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 h-16 shadow-md z-50 transition-colors duration-normal ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+    <header className={`fixed top-0 left-0 right-0 h-16 shadow-md z-50 transition-colors duration-normal ${
+      isDarkMode 
+        ? 'bg-gray-800 text-gray-100 border-b border-gray-700' 
+        : 'bg-white text-gray-900 border-b border-gray-200'
+    }`}>
       <div className="flex items-center justify-between h-full px-4 lg:px-8">
         {/* Logo and Brand */}
         <div className="flex items-center">
           <Link to="/" className="flex items-center space-x-2">
-            <div className={`w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-xl ${isDarkMode ? 'bg-accent-dark' : 'bg-accent'}`}>P</div>
-            <span className={`text-2xl font-bold ${isDarkMode ? 'text-accent-dark' : 'text-accent'}`}>Pidima</span>
+            <div className={`w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-xl ${
+              isDarkMode ? 'bg-primary-dark' : 'bg-primary'
+            }`}>P</div>
+            <span className={`text-2xl font-bold ${
+              isDarkMode ? 'text-primary-dark' : 'text-primary'
+            }`}>Pidima</span>
           </Link>
         </div>
         
@@ -71,7 +78,7 @@ const Header: React.FC = () => {
             placeholder="Search..."
             className={`block w-full pl-10 pr-3 py-2 rounded-md transition-colors duration-fast focus:outline-none focus:ring-2 focus:ring-primary ${
               isDarkMode 
-                ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400 focus:border-primary-dark' 
+                ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-primary-dark' 
                 : 'bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-500 focus:border-primary'
             }`}
           />
@@ -83,8 +90,8 @@ const Header: React.FC = () => {
           <button
             className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-fast relative ${
               isDarkMode
-                ? 'text-gray-300 hover:bg-gray-800 hover:text-primary-dark'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-primary'
+                ? 'text-gray-300 hover:bg-gray-700 hover:text-primary-dark focus:ring-primary-dark'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-primary focus:ring-primary'
             }`}
             aria-label="Notifications"
           >
@@ -97,8 +104,8 @@ const Header: React.FC = () => {
             onClick={handleToggleDarkMode}
             className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-fast ${
               isDarkMode 
-                ? 'text-gray-300 hover:bg-gray-800 hover:text-primary-dark' 
-                : 'text-gray-700 hover:bg-gray-100 hover:text-primary'
+                ? 'text-gray-300 hover:bg-gray-700 hover:text-primary-dark focus:ring-primary-dark' 
+                : 'text-gray-700 hover:bg-gray-100 hover:text-primary focus:ring-primary'
             }`}
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
@@ -115,8 +122,8 @@ const Header: React.FC = () => {
               onClick={toggleUserMenu}
               className={`flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-primary p-1.5 transition-all duration-fast ${
                 isDarkMode
-                  ? 'hover:bg-gray-800'
-                  : 'hover:bg-gray-100'
+                  ? 'hover:bg-gray-700 focus:ring-primary-dark'
+                  : 'hover:bg-gray-100 focus:ring-primary'
               }`}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${
@@ -129,7 +136,7 @@ const Header: React.FC = () => {
             {showUserMenu && (
               <div className={`absolute right-0 mt-2 w-64 rounded-md shadow-lg overflow-hidden z-50 border transition-all duration-fast ${
                 isDarkMode 
-                  ? 'bg-gray-800 border-gray-700' 
+                  ? 'bg-gray-800 border-gray-700 shadow-gray-900' 
                   : 'bg-white border-gray-200'
               }`}>
                 <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
@@ -166,10 +173,10 @@ const Header: React.FC = () => {
           {/* Standalone Sign Out Button */}
           <button
             onClick={handleSignOut}
-            className={`hidden md:flex items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-fast ${
+            className={`hidden md:flex items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-fast ${
               isDarkMode
-                ? 'bg-primary-dark hover:bg-primary text-white'
-                : 'bg-primary hover:bg-primary-hover text-white'
+                ? 'bg-primary-dark hover:bg-primary text-white focus:ring-primary-dark focus:ring-offset-gray-800'
+                : 'bg-primary hover:bg-primary-hover text-white focus:ring-primary focus:ring-offset-white'
             }`}
           >
             <FaSignOutAlt className="mr-2 w-4 h-4" />

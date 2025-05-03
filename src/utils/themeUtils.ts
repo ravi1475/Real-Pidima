@@ -25,6 +25,8 @@ const setupThemeVariables = () => {
     root.style.setProperty('--color-success', '#22c55e');
     root.style.setProperty('--color-warning', '#f59e0b');
     root.style.setProperty('--color-error', '#ef4444');
+    root.style.setProperty('--color-header-bg', '#ffffff');
+    root.style.setProperty('--color-header-border', '#e5e7eb');
     
     // Apply direct styles to body and main elements for more visible changes
     document.body.style.backgroundColor = '#ffffff';
@@ -50,13 +52,21 @@ const setupThemeVariables = () => {
     root.style.setProperty('--color-success', '#34d399');
     root.style.setProperty('--color-warning', '#fbbf24');
     root.style.setProperty('--color-error', '#ef4444');
+    root.style.setProperty('--color-header-bg', '#1f2937');
+    root.style.setProperty('--color-header-border', '#374151');
     
     // Apply direct styles to body and main elements for more visible changes
     document.body.style.backgroundColor = '#111827';
     document.body.style.color = '#f3f4f6';
   }
   
-  // Force all cards to update
+  // Force all relevant elements to update based on theme
+  updateElementClasses(isDark);
+};
+
+// Update classes for various elements based on the theme
+const updateElementClasses = (isDark: boolean) => {
+  // Update cards and backgrounds
   const cards = document.querySelectorAll('.card, .bg-white, .bg-gray-50, .bg-gray-100, [class*="bg-"]');
   cards.forEach(card => {
     if (isDark) {
@@ -65,7 +75,19 @@ const setupThemeVariables = () => {
       (card as HTMLElement).classList.remove('force-dark-mode');
     }
   });
-};
+  
+  // Update header elements specifically
+  const headerElements = document.querySelectorAll('header');
+  headerElements.forEach(header => {
+    if (isDark) {
+      (header as HTMLElement).classList.remove('bg-white', 'text-gray-900', 'border-gray-200');
+      (header as HTMLElement).classList.add('bg-gray-800', 'text-gray-100', 'border-gray-700');
+    } else {
+      (header as HTMLElement).classList.remove('bg-gray-800', 'text-gray-100', 'border-gray-700');
+      (header as HTMLElement).classList.add('bg-white', 'text-gray-900', 'border-gray-200');
+    }
+  });
+}
 
 // Check if dark mode is enabled based on localStorage or system preference
 export const isDarkModeEnabled = (): boolean => {
@@ -105,8 +127,6 @@ export const toggleDarkMode = (): boolean => {
   
   // Dispatch a custom event that components can listen for
   window.dispatchEvent(new CustomEvent('themechange', { detail: { isDarkMode: newMode } }));
-  
-  console.log('Theme changed to:', newMode ? 'dark' : 'light');
   
   return newMode;
 };

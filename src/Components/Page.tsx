@@ -1,9 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Gauge from './Gauge';
+import { isDarkModeEnabled } from '../utils/themeUtils';
 
 const Dashboard = () => {
+  // State for dark mode
+  const [, setIsDarkMode] = useState(isDarkModeEnabled());
+
+  // Listen for theme changes
+  useEffect(() => {
+    const handleThemeChange = (e: CustomEvent) => {
+      setIsDarkMode(e.detail.isDarkMode);
+    };
+    
+    window.addEventListener('themechange', handleThemeChange as EventListener);
+    return () => {
+      window.removeEventListener('themechange', handleThemeChange as EventListener);
+    };
+  }, []);
+
   // Mock data state - this replaces the backend data fetching
   const [stats] = useState({
     requirementsCount: 24,
@@ -16,7 +32,7 @@ const Dashboard = () => {
     <div className="bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-950 min-h-screen pt-24 pb-8 sm:pb-10 md:pb-12 px-4 sm:px-5 md:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 mb-8 sm:mb-10 md:mb-12">
-          <h1 className="text-3xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-400 dark:to-indigo-500">
+          <h1 className="text-3xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-400 dark:to-indigo-500">
             Dashboard
           </h1>
           <div className="bg-white dark:bg-gray-800 rounded-lg px-3 sm:px-3 md:px-4 py-1.5 sm:py-2 shadow-md border border-gray-100 dark:border-gray-700 transition-colors duration-300">
@@ -32,7 +48,7 @@ const Dashboard = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h2 className="text-xl sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent mb-2">Requirements</h2>
+              <h2 className="text-xl sm:text-xl md:text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500 mb-2">Requirements</h2>
               <p className="text-4xl sm:text-5xl md:text-6xl font-bold text-blue-600 dark:text-blue-400 mb-2">
                 {stats.requirementsCount}
               </p>
@@ -47,7 +63,7 @@ const Dashboard = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <h2 className="text-xl sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-indigo-500 to-blue-500 bg-clip-text text-transparent mb-2">Test Cases</h2>
+              <h2 className="text-xl sm:text-xl md:text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-blue-500 mb-2">Test Cases</h2>
               <p className="text-4xl sm:text-5xl md:text-6xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
                 {stats.testCasesCount}
               </p>
@@ -62,7 +78,7 @@ const Dashboard = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h2 className="text-xl sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-purple-500 to-indigo-500 bg-clip-text text-transparent mb-4">Test Coverage</h2>
+              <h2 className="text-xl sm:text-xl md:text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-500 mb-4">Test Coverage</h2>
               <div className="mb-6 relative transform transition-all duration-300 hover:scale-105">
                 <Gauge coveragePercentage={stats.coveragePercentage} />
               </div>

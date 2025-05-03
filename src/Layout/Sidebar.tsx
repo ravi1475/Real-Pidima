@@ -10,7 +10,9 @@ import {
   FaChevronLeft,
   FaBars,
   FaQuestionCircle,
-  FaHeadset
+  FaHeadset,
+  FaUserPlus,
+  FaBuilding
 } from 'react-icons/fa';
 import { isDarkModeEnabled } from '../utils/themeUtils';
 
@@ -43,6 +45,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleSidebar }) => {
     { path: '/traceability-matrix', icon: <FaProjectDiagram />, label: 'Traceability Matrix' },
     { path: '/import-export', icon: <FaFileImport />, label: 'Import/Export' },
     { path: '/account', icon: <FaUserCog />, label: 'Account' },
+    { path: '/registeruser', icon: <FaUserPlus />, label: 'Register User' },
+    { path: '/originationcreation', icon: <FaBuilding />, label: 'Create Organization' },
   ];
 
   return (

@@ -28,6 +28,8 @@
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
+  --color-header-bg: #ffffff;
+  --color-header-border: #e5e7eb;
 
   /* Animation durations */
   --transition-fast: 150ms;
@@ -59,6 +61,8 @@
   --color-success: #34d399;
   --color-warning: #fbbf24;
   --color-error: #ef4444;
+  --color-header-bg: #1f2937;
+  --color-header-border: #374151;
 }
 
 body {
@@ -80,6 +84,7 @@ body.dark-mode {
 body.dark-mode header {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
+  color: #f3f4f6 !important;
 }
 
 body.dark-mode .bg-white {
@@ -96,6 +101,15 @@ body.dark-mode .border-gray-200 {
 
 body.dark-mode .shadow {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Header specific styles for dark mode */
+header {
+  transition: background-color var(--transition-normal) ease, 
+              color var(--transition-normal) ease,
+              border-color var(--transition-normal) ease;
+  background-color: var(--color-header-bg);
+  border-color: var(--color-header-border);
 }
 
 /* Force dark mode class */
