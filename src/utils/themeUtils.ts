@@ -31,6 +31,17 @@ const setupThemeVariables = () => {
     // Apply direct styles to body and main elements for more visible changes
     document.body.style.backgroundColor = '#ffffff';
     document.body.style.color = '#171717';
+    
+    // Additional light mode specific variables
+    root.style.setProperty('--color-sidebar-bg', '#ffffff');
+    root.style.setProperty('--color-sidebar-active', '#f3f4f6');
+    root.style.setProperty('--color-sidebar-hover', '#f9fafb');
+    root.style.setProperty('--color-sidebar-text', '#1f2937');
+    root.style.setProperty('--color-sidebar-active-text', '#4f46e5');
+    root.style.setProperty('--color-input-bg', '#f9fafb');
+    root.style.setProperty('--color-input-border', '#e5e7eb');
+    root.style.setProperty('--color-input-text', '#1f2937');
+    root.style.setProperty('--color-card-shadow', 'rgba(0, 0, 0, 0.1)');
   } 
   // Dark mode colors
   else {
@@ -58,6 +69,23 @@ const setupThemeVariables = () => {
     // Apply direct styles to body and main elements for more visible changes
     document.body.style.backgroundColor = '#111827';
     document.body.style.color = '#f3f4f6';
+    
+    // Additional dark mode specific variables
+    root.style.setProperty('--color-sidebar-bg', '#1f2937');
+    root.style.setProperty('--color-sidebar-active', '#374151');
+    root.style.setProperty('--color-sidebar-hover', '#4b5563');
+    root.style.setProperty('--color-sidebar-text', '#e5e7eb');
+    root.style.setProperty('--color-sidebar-active-text', '#6366f1');
+    root.style.setProperty('--color-input-bg', '#374151');
+    root.style.setProperty('--color-input-border', '#4b5563');
+    root.style.setProperty('--color-input-text', '#f3f4f6');
+    root.style.setProperty('--color-card-shadow', 'rgba(0, 0, 0, 0.3)');
+    
+    // Add specific variables for traceability matrix
+    root.style.setProperty('--color-matrix-header', 'rgba(30, 41, 59, 0.8)'); 
+    root.style.setProperty('--color-matrix-row-hover', 'rgba(30, 41, 59, 0.5)');
+    root.style.setProperty('--color-matrix-selected', 'rgba(30, 58, 138, 0.4)');
+    root.style.setProperty('--color-matrix-border', '#374151');
   }
   
   // Force all relevant elements to update based on theme
@@ -87,6 +115,54 @@ const updateElementClasses = (isDark: boolean) => {
       (header as HTMLElement).classList.add('bg-white', 'text-gray-900', 'border-gray-200');
     }
   });
+  
+  // Update sidebar elements specifically
+  const sidebarElements = document.querySelectorAll('.sidebar');
+  sidebarElements.forEach(sidebar => {
+    if (isDark) {
+      (sidebar as HTMLElement).classList.remove('bg-white', 'text-gray-900', 'border-gray-200');
+      (sidebar as HTMLElement).classList.add('bg-gray-800', 'text-gray-100', 'border-gray-700');
+    } else {
+      (sidebar as HTMLElement).classList.remove('bg-gray-800', 'text-gray-100', 'border-gray-700');
+      (sidebar as HTMLElement).classList.add('bg-white', 'text-gray-900', 'border-gray-200');
+    }
+  });
+  
+  // Update input fields
+  const inputElements = document.querySelectorAll('input, select, textarea');
+  inputElements.forEach(input => {
+    if (isDark) {
+      (input as HTMLElement).classList.remove('bg-gray-50', 'border-gray-300', 'text-gray-900');
+      (input as HTMLElement).classList.add('bg-gray-700', 'border-gray-600', 'text-gray-100');
+    } else {
+      (input as HTMLElement).classList.remove('bg-gray-700', 'border-gray-600', 'text-gray-100');
+      (input as HTMLElement).classList.add('bg-gray-50', 'border-gray-300', 'text-gray-900');
+    }
+  });
+  
+  // Update table elements 
+  const tableElements = document.querySelectorAll('table, tr, th, td');
+  tableElements.forEach(table => {
+    if (isDark) {
+      (table as HTMLElement).classList.add('dark-table');
+    } else {
+      (table as HTMLElement).classList.remove('dark-table');
+    }
+  });
+  
+  // Update MUI components (for Tooltips and other components)
+  const muiElements = document.querySelectorAll('.MuiTooltip-tooltip');
+  muiElements.forEach(element => {
+    if (isDark) {
+      (element as HTMLElement).style.backgroundColor = '#1f2937';
+      (element as HTMLElement).style.color = '#f3f4f6';
+      (element as HTMLElement).style.border = '1px solid #374151';
+    } else {
+      (element as HTMLElement).style.backgroundColor = '#f5f5f9';
+      (element as HTMLElement).style.color = 'rgba(0, 0, 0, 0.87)';
+      (element as HTMLElement).style.border = '1px solid #e5e7eb';
+    }
+  });
 }
 
 // Check if dark mode is enabled based on localStorage or system preference
@@ -102,10 +178,12 @@ export const applyDarkMode = (isDark: boolean): void => {
   if (isDark) {
     document.documentElement.classList.add('dark');
     document.body.classList.add('dark-mode');
+    document.body.classList.remove('light-mode');
     localStorage.setItem('theme', 'dark');
   } else {
     document.documentElement.classList.remove('dark');
     document.body.classList.remove('dark-mode');
+    document.body.classList.add('light-mode');
     localStorage.setItem('theme', 'light');
   }
   

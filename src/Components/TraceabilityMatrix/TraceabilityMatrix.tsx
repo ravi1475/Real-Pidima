@@ -130,6 +130,20 @@ const TraceabilityMatrix: React.FC = () => {
   const isCritiqueEnabled = selectedIds.length > 0;
   const hasValidMatrix = Array.isArray(matrix) && matrix.length > 0;
 
+  // Commented out unused code - may be needed in future implementation
+  // Filter mappings for the selected requirement
+  // const filteredMappings = showMappingsForReq 
+  //   ? mappings.filter(mapping => mapping.requirementId === showMappingsForReq)
+  //   : [];
+
+  // Function to convert requirementId to req_id
+  // const getRequirementReqId = (requirementId: string): string => {
+  //   const item = matrix.find(item => 
+  //     item.requirement && item.requirement.req_id === requirementId
+  //   );
+  //   return item?.requirement?.req_id || requirementId;
+  // };
+
   return (
     <div className="container mx-auto p-4 dark:bg-gray-900 min-h-screen transition-colors duration-300">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-4 mb-6 gap-4">
@@ -158,7 +172,7 @@ const TraceabilityMatrix: React.FC = () => {
         </div>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg dark:shadow-gray-900/30 overflow-x-auto mt-4 transition-all duration-300 hover:shadow-xl border border-gray-100 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg dark:shadow-gray-900/50 overflow-x-auto mt-4 transition-all duration-300 hover:shadow-xl border border-gray-100 dark:border-gray-700">
         {isLoading ? (
           <div className="flex justify-center items-center h-32">
             <FaSpinner className="animate-spin text-4xl text-blue-500 dark:text-blue-400" />
@@ -170,7 +184,7 @@ const TraceabilityMatrix: React.FC = () => {
         ) : (
           <table className="w-full table-auto">
             <thead>
-              <tr className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 text-gray-700 dark:text-gray-300">
+              <tr className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/40 dark:to-purple-900/40 text-gray-700 dark:text-gray-200">
                 <th className="px-4 py-3 text-left w-10 border-b-2 border-blue-200 dark:border-blue-800">
                   <button
                     onClick={handleToggleSelectAll}
@@ -187,7 +201,6 @@ const TraceabilityMatrix: React.FC = () => {
                 <th className="px-4 py-3 text-left border-b-2 border-blue-200 dark:border-blue-800">Requirement ID</th>
                 <th className="px-4 py-3 text-left border-b-2 border-blue-200 dark:border-blue-800">Count</th>
                 <th className="px-4 py-3 text-left border-b-2 border-blue-200 dark:border-blue-800">Test Case IDs</th>
-                <th className="px-4 py-3 text-left border-b-2 border-blue-200 dark:border-blue-800">Remediation</th>
                 <th className="px-4 py-3 text-left border-b-2 border-blue-200 dark:border-blue-800">Actions</th>
               </tr>
             </thead>
@@ -207,7 +220,7 @@ const TraceabilityMatrix: React.FC = () => {
         )}
 
         {critiqueText && (
-          <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors duration-300">
+          <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-700/60 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors duration-300">
             <h2 className="text-xl font-bold mb-2 text-blue-600 dark:text-blue-400">Critique Results</h2>
             <div className="whitespace-pre-line text-sm text-gray-800 dark:text-gray-200">
               <ReactMarkdown>{critiqueText}</ReactMarkdown>
@@ -216,7 +229,7 @@ const TraceabilityMatrix: React.FC = () => {
         )}
       </div>
 
-      <ToastContainer />
+      <ToastContainer theme="dark" />
     </div>
   );
 };

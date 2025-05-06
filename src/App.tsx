@@ -5,7 +5,7 @@ import SignIn from './Auth Services/SignIn'
 import UserProfile from './Auth Services/UserService'
 import AdminDashboard from './Auth Services/AdminService'
 import Layout from './Layout/Layout'
-import { initializeDarkMode, isDarkModeEnabled } from './utils/themeUtils'
+import { initializeDarkMode, isDarkModeEnabled, applyDarkMode } from './utils/themeUtils'
 import './App.css'
 import Dashboard from './Components/Page'
 import Requirements from './Components/Requirements'
@@ -45,9 +45,16 @@ const ProtectedRoute = ({ children, requiredRole = null }: { children: React.Rea
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(isDarkModeEnabled());
   
-  // Initialize and set up dark mode
+  // Initialize and set up theme (ensuring light theme is properly set)
   useEffect(() => {
-    initializeDarkMode();
+    // Force light theme if no preference is explicitly set
+    if (!localStorage.getItem('theme')) {
+      localStorage.setItem('theme', 'light');
+      applyDarkMode(false);
+    } else {
+      // Initialize with existing preferences
+      initializeDarkMode();
+    }
     
     // Listen for theme changes
     const handleThemeChange = (e: CustomEvent) => {
@@ -57,9 +64,11 @@ function App() {
       if (e.detail.isDarkMode) {
         document.documentElement.classList.add('dark');
         document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
       } else {
         document.documentElement.classList.remove('dark');
         document.body.classList.remove('dark-mode');
+        document.body.classList.add('light-mode');
       }
     };
     

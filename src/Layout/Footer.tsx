@@ -1,67 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { isDarkModeEnabled } from '../utils/themeUtils';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
-  const [isDarkMode, setIsDarkMode] = useState(isDarkModeEnabled());
   
-  // Listen for theme changes
+  // Listen for theme changes (for future use)
   useEffect(() => {
-    const handleThemeChange = (e: CustomEvent) => {
-      setIsDarkMode(e.detail.isDarkMode);
+    const handleThemeChange = () => {
+      // Theme change handler for future theme-dependent functionality
     };
     
-    window.addEventListener('themechange', handleThemeChange as EventListener);
+    window.addEventListener('themechange', handleThemeChange);
     return () => {
-      window.removeEventListener('themechange', handleThemeChange as EventListener);
+      window.removeEventListener('themechange', handleThemeChange);
     };
   }, []);
   
   return (
-    <footer className={`py-4 border-t transition-colors duration-normal ${
-      isDarkMode 
-        ? 'bg-gray-800 border-gray-700 text-gray-300' 
-        : 'bg-white border-gray-200 text-gray-800'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer 
+      className="py-4 border-t transition-colors duration-normal"
+      style={{
+        backgroundColor: 'var(--color-header-bg)',
+        borderColor: 'var(--color-header-border)',
+        color: 'var(--color-text-secondary)'
+      }}
+    >
+      <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              &copy; {currentYear} Pidima. All rights reserved.
+            <p style={{ color: 'var(--color-text-secondary)' }}>
+              © {currentYear} Pidima - Personal Digital Management Assistant. All rights reserved.
             </p>
           </div>
           
           <div className="flex space-x-6">
             <Link 
               to="/terms" 
-              className={`text-sm transition-colors duration-fast ${
-                isDarkMode 
-                  ? 'text-gray-400 hover:text-accent-dark' 
-                  : 'text-gray-500 hover:text-accent'
-              }`}
+              className="transition-colors duration-150 hover:underline"
+              style={{ color: 'var(--color-link)' }}
             >
               Terms of Service
             </Link>
             <Link 
-              to="/licenses" 
-              className={`text-sm transition-colors duration-fast ${
-                isDarkMode 
-                  ? 'text-gray-400 hover:text-accent-dark' 
-                  : 'text-gray-500 hover:text-accent'
-              }`}
+              to="/privacy" 
+              className="transition-colors duration-150 hover:underline"
+              style={{ color: 'var(--color-link)' }}
             >
               Privacy Policy
             </Link>
             <Link 
-              to="/help" 
-              className={`text-sm transition-colors duration-fast ${
-                isDarkMode 
-                  ? 'text-gray-400 hover:text-accent-dark' 
-                  : 'text-gray-500 hover:text-accent'
-              }`}
+              to="/contact" 
+              className="transition-colors duration-150 hover:underline"
+              style={{ color: 'var(--color-link)' }}
             >
-              Help
+              Contact Us
             </Link>
           </div>
         </div>

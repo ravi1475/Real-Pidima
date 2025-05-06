@@ -30,6 +30,23 @@
   --color-error: #ef4444;
   --color-header-bg: #ffffff;
   --color-header-border: #e5e7eb;
+  
+  /* Additional light theme specific variables */
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-active: #f3f4f6;
+  --color-sidebar-hover: #f9fafb;
+  --color-sidebar-text: #1f2937;
+  --color-sidebar-active-text: #4f46e5;
+  --color-input-bg: #f9fafb;
+  --color-input-border: #e5e7eb;
+  --color-input-text: #1f2937;
+  --color-card-shadow: rgba(0, 0, 0, 0.1);
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f9fafb;
+  --color-surface-3: #f3f4f6;
+  --color-text-primary: #171717;
+  --color-text-secondary: #4b5563;
+  --color-text-tertiary: #6b7280;
 
   /* Animation durations */
   --transition-fast: 150ms;
@@ -63,6 +80,23 @@
   --color-error: #ef4444;
   --color-header-bg: #1f2937;
   --color-header-border: #374151;
+  
+  /* Additional dark theme specific variables */
+  --color-sidebar-bg: #1f2937;
+  --color-sidebar-active: #374151;
+  --color-sidebar-hover: #4b5563;
+  --color-sidebar-text: #e5e7eb;
+  --color-sidebar-active-text: #6366f1;
+  --color-input-bg: #374151;
+  --color-input-border: #4b5563;
+  --color-input-text: #f3f4f6;
+  --color-card-shadow: rgba(0, 0, 0, 0.3);
+  --color-surface-1: #1f2937;
+  --color-surface-2: #111827;
+  --color-surface-3: #374151;
+  --color-text-primary: #f3f4f6;
+  --color-text-secondary: #d1d5db;
+  --color-text-tertiary: #9ca3af;
 }
 
 body {
@@ -103,6 +137,57 @@ body.dark-mode .shadow {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3) !important;
 }
 
+/* Explicit light mode for body */
+body.light-mode {
+  background-color: #ffffff !important;
+  color: #171717 !important;
+}
+
+body.light-mode header {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #171717 !important;
+}
+
+body.light-mode .bg-gray-800 {
+  background-color: #ffffff !important;
+}
+
+body.light-mode .text-gray-100 {
+  color: #171717 !important;
+}
+
+body.light-mode .border-gray-700 {
+  border-color: #e5e7eb !important;
+}
+
+body.light-mode .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Explicit light mode classes for components */
+body:not(.dark-mode) header {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #171717 !important;
+}
+
+body:not(.dark-mode) .bg-gray-800 {
+  background-color: #ffffff !important;
+}
+
+body:not(.dark-mode) .text-gray-100 {
+  color: #171717 !important;
+}
+
+body:not(.dark-mode) .border-gray-700 {
+  border-color: #e5e7eb !important;
+}
+
+body:not(.dark-mode) .shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
 /* Header specific styles for dark mode */
 header {
   transition: background-color var(--transition-normal) ease, 
@@ -117,6 +202,62 @@ header {
   background-color: #1f2937 !important;
   color: #f3f4f6 !important;
   border-color: #374151 !important;
+}
+
+/* Force light mode class */
+.force-light-mode {
+  background-color: #ffffff !important;
+  color: #171717 !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Common styling for components in both themes */
+.card {
+  @apply rounded-lg shadow transition-all duration-300;
+  background-color: var(--color-surface-1);
+  border: 1px solid var(--color-card-border);
+  box-shadow: 0 4px 6px -1px var(--color-card-shadow), 0 2px 4px -1px var(--color-card-shadow);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px var(--color-card-shadow), 0 4px 6px -2px var(--color-card-shadow);
+}
+
+.btn-primary {
+  @apply rounded-md font-medium transition-all duration-150;
+  background-color: var(--color-primary-button);
+  color: var(--color-primary-button-text);
+  padding: 0.5rem 1rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-button-hover);
+}
+
+.btn-secondary {
+  @apply rounded-md font-medium transition-all duration-150;
+  background-color: var(--color-secondary-button);
+  color: var(--color-secondary-button-text);
+  padding: 0.5rem 1rem;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary-button-hover);
+}
+
+.input-field {
+  @apply rounded-md w-full transition-all duration-150;
+  background-color: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  color: var(--color-input-text);
+  padding: 0.5rem 0.75rem;
+}
+
+.input-field:focus {
+  @apply outline-none ring-2;
+  border-color: var(--color-primary-button);
+  ring-color: var(--color-primary-button);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -169,26 +310,6 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* Primary button */
-.btn-primary {
-  background-color: var(--color-primary-button);
-  color: var(--color-primary-button-text);
-}
-
-.btn-primary:hover {
-  background-color: var(--color-primary-button-hover);
-}
-
-/* Secondary button */
-.btn-secondary {
-  background-color: var(--color-secondary-button);
-  color: var(--color-secondary-button-text);
-}
-
-.btn-secondary:hover {
-  background-color: var(--color-secondary-button-hover);
-}
-
 /* Animation classes */
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-in;
@@ -214,4 +335,211 @@ button:focus-visible {
   to {
     opacity: 1;
   }
+}
+
+/* Custom transition durations */
+.duration-fast {
+  transition-duration: 150ms;
+}
+
+.duration-normal {
+  transition-duration: 200ms;
+}
+
+.duration-slow {
+  transition-duration: 300ms;
+}
+
+/* Update dark table styling */
+.dark-table th {
+  background-color: var(--color-matrix-header, rgba(30, 41, 59, 0.8));
+  color: #f3f4f6;
+  border-color: var(--color-matrix-border, #374151);
+}
+
+.dark-table td {
+  border-color: var(--color-matrix-border, #374151);
+}
+
+.dark-table tr:hover {
+  background-color: var(--color-matrix-row-hover, rgba(30, 41, 59, 0.5));
+}
+
+/* Tooltips for dark mode */
+.dark .MuiTooltip-tooltip,
+body.dark-mode .MuiTooltip-tooltip {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+  border: 1px solid #374151 !important;
+}
+
+.dark .MuiTooltip-arrow,
+body.dark-mode .MuiTooltip-arrow {
+  color: #1f2937 !important;
+}
+
+/* Fix traceability matrix dark mode issues */
+.dark .bg-gradient-to-r.from-blue-50.to-purple-50 {
+  background-image: linear-gradient(to right, rgba(30, 41, 59, 0.8), rgba(67, 56, 202, 0.3));
+}
+
+.dark tr:hover {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+.dark tr.bg-blue-100 {
+  background-color: rgba(30, 58, 138, 0.4) !important;
+}
+
+.dark tr.bg-blue-100:hover {
+  background-color: rgba(30, 58, 138, 0.5) !important;
+}
+
+/* Toast dark mode fixes */
+.dark .Toastify__toast,
+body.dark-mode .Toastify__toast {
+  background-color: #1f2937;
+  color: #f3f4f6;
+}
+
+.dark .Toastify__close-button,
+body.dark-mode .Toastify__close-button {
+  color: #f3f4f6;
+}
+
+.dark .Toastify__progress-bar,
+body.dark-mode .Toastify__progress-bar {
+  background-color: #4f46e5;
+}
+
+/* Dark mode for modal backdrops */
+.dark .backdrop-blur-sm,
+body.dark-mode .backdrop-blur-sm {
+  backdrop-filter: blur(8px) brightness(0.5);
+}
+
+/* Fix any remaining light/dark mode inconsistencies */
+.dark input,
+body.dark-mode input {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark button:not([class*="bg-"]),
+body.dark-mode button:not([class*="bg-"]) {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark-mode a {
+  color: var(--color-link);
+}
+
+.dark-mode a:hover {
+  color: var(--color-link-hover);
+}
+
+/* Improve table styling for dark mode */
+.dark table, 
+.dark-mode table {
+  border-color: var(--color-matrix-border, #374151);
+}
+
+.dark table tr:nth-child(even),
+.dark-mode table tr:nth-child(even) {
+  background-color: rgba(31, 41, 55, 0.3);
+}
+
+.dark table th,
+.dark-mode table th {
+  background-color: var(--color-matrix-header, rgba(30, 41, 59, 0.8));
+  color: #f3f4f6;
+}
+
+/* Improve modal styling */
+.dark .fixed.inset-0,
+.dark-mode .fixed.inset-0 {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Enhanced form elements in dark mode */
+.dark select,
+.dark-mode select {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.dark select option,
+.dark-mode select option {
+  background-color: #1f2937;
+  color: #f3f4f6;
+}
+
+.dark textarea,
+.dark-mode textarea {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+/* Make status badges pop more in dark mode */
+.dark [class*="bg-green-100"],
+.dark-mode [class*="bg-green-100"] {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #6ee7b7 !important;
+}
+
+.dark [class*="bg-red-100"],
+.dark-mode [class*="bg-red-100"] {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #fca5a5 !important;
+}
+
+.dark [class*="bg-yellow-100"],
+.dark-mode [class*="bg-yellow-100"] {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  color: #fcd34d !important;
+}
+
+.dark [class*="bg-blue-100"],
+.dark-mode [class*="bg-blue-100"] {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  color: #93c5fd !important;
+}
+
+.dark [class*="bg-purple-100"],
+.dark-mode [class*="bg-purple-100"] {
+  background-color: rgba(139, 92, 246, 0.2) !important;
+  color: #c4b5fd !important;
+}
+
+/* Improve form inputs in dark mode */
+.dark input[type="checkbox"],
+.dark-mode input[type="checkbox"] {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.dark input[type="checkbox"]:checked,
+.dark-mode input[type="checkbox"]:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Enhance focus styles in dark mode */
+.dark *:focus,
+.dark-mode *:focus {
+  outline-color: #3b82f6;
+}
+
+/* Consistent modal backdrop styling */
+.fixed.inset-0.flex.justify-center.items-center.z-50 {
+  backdrop-filter: blur(3px);
+}
+
+.dark .fixed.inset-0.flex.justify-center.items-center.z-50,
+.dark-mode .fixed.inset-0.flex.justify-center.items-center.z-50 {
+  backdrop-filter: blur(3px) brightness(0.4);
 }

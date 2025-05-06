@@ -3,7 +3,6 @@ import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { TraceabilityItem } from '../../../types/traceability';
-import RemediationBadge from './RemediationBadge';
 import RowActions from './RowActions';
 
 interface MatrixRowProps {
@@ -23,6 +22,16 @@ const HtmlTooltip = styled(({ className, ...props }: any) => (
     maxWidth: 500,
     fontSize: "0.75rem",
     border: "1px solid black",
+    "@media (prefers-color-scheme: dark)": {
+      backgroundColor: "#1f2937",
+      color: "#f3f4f6",
+      border: "1px solid #374151",
+    },
+    ".dark &": {
+      backgroundColor: "#1f2937",
+      color: "#f3f4f6",
+      border: "1px solid #374151",
+    }
   },
 });
 
@@ -37,6 +46,11 @@ const MatrixRow: React.FC<MatrixRowProps> = memo(({
   isSelected,
   onSelectRow
 }) => {
+  // Calculate styles based on selection
+  const rowStyles = isSelected
+    ? "bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/50"
+    : "hover:bg-gray-50 dark:hover:bg-gray-800/40";
+
   // Handle checkbox change
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isShiftKey = (e.nativeEvent as MouseEvent).shiftKey;
@@ -75,7 +89,7 @@ const MatrixRow: React.FC<MatrixRowProps> = memo(({
   };
   
   return (
-    <tr key={item.requirement?.req_id || `no-req-${index}`} className={`transition-colors duration-200 ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700/40'}`}>
+    <tr key={item.requirement?.req_id || `no-req-${index}`} className={`transition-colors duration-200 ${rowStyles}`}>
       <td className="border px-4 py-2 border-gray-200 dark:border-gray-700">
         {item.requirement && (
           <input
@@ -108,15 +122,8 @@ const MatrixRow: React.FC<MatrixRowProps> = memo(({
         {item.testCases.length > 0 ? renderTestCases() : <span className="text-gray-500 dark:text-gray-400">No test cases</span>}
       </td>
       <td className="border px-4 py-2 border-gray-200 dark:border-gray-700">
-        {item.remediation ? (
-          <RemediationBadge remediation={item.remediation} />
-        ) : (
-          <span className="text-gray-500 dark:text-gray-400">-</span>
-        )}
-      </td>
-      <td className="border px-4 py-2 border-gray-200 dark:border-gray-700">
         {item.requirement && (
-          <RowActions requirement={item.requirement} remediation={item.remediation} />
+          <RowActions requirement={item.requirement} />
         )}
       </td>
     </tr>

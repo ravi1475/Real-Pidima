@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { RequirementDisplay, Remediation } from '../../../types/traceability';
+import { RequirementDisplay } from '../../../types/traceability';
 import { useTraceability } from '../context';
 
 interface RowActionsProps {
   requirement: RequirementDisplay;
-  remediation?: Remediation;
 }
 
 /**
  * Component that provides actions for a traceability matrix row
  */
-const RowActions: React.FC<RowActionsProps> = ({ requirement, remediation }) => {
+const RowActions: React.FC<RowActionsProps> = ({ requirement }) => {
   const { deleteRequirement } = useTraceability();
   const [modalContent, setModalContent] = useState<string | null>(null);
   
@@ -30,11 +29,6 @@ const RowActions: React.FC<RowActionsProps> = ({ requirement, remediation }) => 
     setModalContent('addTestCase');
   };
   
-  // Show remediation form
-  const handleRemediation = () => {
-    setModalContent(remediation ? 'editRemediation' : 'addRemediation');
-  };
-  
   // Close modal
   const handleCloseModal = () => {
     setModalContent(null);
@@ -51,13 +45,6 @@ const RowActions: React.FC<RowActionsProps> = ({ requirement, remediation }) => 
           + Test Case
         </button>
         <button
-          onClick={handleRemediation}
-          className={`${remediation ? 'bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700' : 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'} text-white px-2 py-1 rounded text-xs transition-colors duration-200`}
-          title={remediation ? 'Edit Remediation' : 'Add Remediation'}
-        >
-          {remediation ? 'Edit Remediation' : 'Remediate'}
-        </button>
-        <button
           onClick={handleDelete}
           className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors duration-200"
           title="Delete Requirement"
@@ -68,12 +55,11 @@ const RowActions: React.FC<RowActionsProps> = ({ requirement, remediation }) => 
       
       {modalContent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
-          <div className="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+          <div className="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
             {/* Modal content would go here - forms for test case and remediation */}
             <div className="p-4">
               <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
-                {modalContent === 'addTestCase' ? 'Add Test Case' : 
-                 modalContent === 'addRemediation' ? 'Add Remediation' : 'Edit Remediation'}
+                {modalContent === 'addTestCase' ? 'Add Test Case' : 'Form'}
               </h2>
               
               {/* Form content would go here */}

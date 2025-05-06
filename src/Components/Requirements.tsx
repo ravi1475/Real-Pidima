@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaFileImport, FaFilter, FaSort, FaSpinner, FaLock, FaUnlock, FaTrash, FaTimes, FaSearch, FaEdit, FaEye } from 'react-icons/fa';
 import { isDarkModeEnabled } from '../utils/themeUtils';
-import { API } from '../config/environment';
+import { API, PROJECT_ID } from '../config/environment';
+import { httpService } from '../Auth Services/UserService';
 import './animations.css'; // Import animations
 
 const Requirements: React.FC = () => {
@@ -16,9 +17,6 @@ const Requirements: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{text: string, type: 'success' | 'error' | 'info'} | null>(null);
-  
-  // Hardcoded project ID for now - can be changed in the future
-  const PROJECT_ID = "1";
   
   // Listen for theme changes
   useEffect(() => {
@@ -49,13 +47,7 @@ const Requirements: React.FC = () => {
       setError(null);
       
       try {
-        const response = await fetch(`${API.REQUIREMENTS}?projectId=${PROJECT_ID}`);
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-        
-        const data = await response.json();
+        const data = await httpService.get(API.PROJECT_REQUIREMENTS);
         setRequirements(data);
         setStatusMessage({
           text: 'Requirements loaded successfully',
@@ -63,37 +55,8 @@ const Requirements: React.FC = () => {
         });
       } catch (err) {
         console.error('Failed to fetch requirements:', err);
-        setError('Failed to load requirements. Using mock data for development.');
-        
-        // Fallback to mock data for development purposes
-        const mockData = [
-          { 
-            id: 'req-123-456', 
-            title: 'System must support user authentication', 
-            description: 'Users should be able to register and login using email/password',
-            classification: 'Security', 
-            module: 'Authentication',
-            projectId: PROJECT_ID
-          },
-          { 
-            id: 'req-234-567', 
-            title: 'System must handle file uploads', 
-            description: 'Users should be able to upload files up to 10MB in size',
-            classification: 'Functionality', 
-            module: 'File Management',
-            projectId: PROJECT_ID
-          },
-          { 
-            id: 'req-345-678', 
-            title: 'System must be responsive', 
-            description: 'UI should work on mobile and desktop devices',
-            classification: 'Non-functional', 
-            module: 'UI/UX',
-            projectId: PROJECT_ID
-          },
-        ];
-        
-        setRequirements(mockData);
+        setError('Failed to load requirements. Please check your connection and try again.');
+        setRequirements([]);
       } finally {
         setIsLoading(false);
       }
@@ -108,10 +71,11 @@ const Requirements: React.FC = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       req.id?.toLowerCase().includes(searchLower) ||
-      req.title?.toLowerCase().includes(searchLower) ||
+      req.domain?.toLowerCase().includes(searchLower) ||
       req.description?.toLowerCase().includes(searchLower) ||
-      req.classification?.toLowerCase().includes(searchLower) ||
-      req.module?.toLowerCase().includes(searchLower)
+      req.type?.toLowerCase().includes(searchLower) ||
+      req.priority?.toLowerCase().includes(searchLower) ||
+      req.status?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -130,8 +94,12 @@ const Requirements: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // You would implement proper API deletion here
-      // For now, just filter locally
+      // Delete requirements using httpService
+      for (const reqId of selectedRequirements) {
+        await httpService.delete(`${API.REQUIREMENTS}/${reqId}`);
+      }
+      
+      // Filter locally after API deletion
       setRequirements(prev => prev.filter(req => !selectedRequirements.includes(req.id)));
       setSelectedRequirements([]);
       setStatusMessage({
@@ -152,22 +120,11 @@ const Requirements: React.FC = () => {
     setError(null);
     
     try {
-      const response = await fetch(API.REQUIREMENTS, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...requirementData,
-          projectId: PROJECT_ID
-        })
+      const newRequirement = await httpService.post(API.REQUIREMENTS, {
+        ...requirementData,
+        projectId: PROJECT_ID
       });
       
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-      
-      const newRequirement = await response.json();
       setRequirements(prev => [...prev, newRequirement]);
       setShowAddModal(false);
       setStatusMessage({
@@ -176,23 +133,8 @@ const Requirements: React.FC = () => {
       });
     } catch (err) {
       console.error('Failed to add requirement:', err);
-      
-      // Generate a mock ID for frontend-only development in case of API error
-      const mockId = `req-${Date.now()}`;
-      const mockRequirement = {
-        id: mockId,
-        ...requirementData,
-        projectId: PROJECT_ID
-      };
-      
-      // Add the mock requirement to the list
-      setRequirements(prev => [...prev, mockRequirement]);
+      setError('Failed to add requirement. Please try again later.');
       setShowAddModal(false);
-      
-      setStatusMessage({
-        text: 'Requirement saved locally only. Backend connection failed.',
-        type: 'info'
-      });
     } finally {
       setIsLoading(false);
     }
@@ -232,7 +174,7 @@ const Requirements: React.FC = () => {
   );
 
   const ImportRequirementsModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-4/5 max-w-2xl shadow-2xl border border-gray-200 dark:border-gray-700 transform transition-transform duration-300">
         <div className="flex justify-between items-center mb-6 border-b pb-4 dark:border-gray-700">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">Import Requirements</h2>
@@ -270,21 +212,22 @@ const Requirements: React.FC = () => {
   );
 
   const AddRequirementModal = () => {
-    const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [classification, setClassification] = useState('Security');
-    const [module, setModule] = useState('Authentication');
+    const [domain, setDomain] = useState('');
+    const [priority, setPriority] = useState('MEDIUM');
+    const [status, setStatus] = useState('DRAFT');
+    const [type, setType] = useState('FUNCTIONAL');
     const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
     
     const validateForm = () => {
       const errors: {[key: string]: string} = {};
       
-      if (!title.trim()) {
-        errors.title = 'Title is required';
-      }
-      
       if (!description.trim()) {
         errors.description = 'Description is required';
+      }
+      
+      if (!domain.trim()) {
+        errors.domain = 'Domain is required';
       }
       
       setFormErrors(errors);
@@ -295,15 +238,16 @@ const Requirements: React.FC = () => {
       if (!validateForm()) return;
       
       handleAddRequirement({
-        title,
         description,
-        classification,
-        module
+        domain,
+        priority,
+        status,
+        type
       });
     };
     
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm animate-fadeIn">
+      <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fadeIn">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-4/5 max-w-2xl shadow-2xl border border-gray-200 dark:border-gray-700 transform transition-transform duration-300">
           <div className="flex justify-between items-center mb-6 border-b pb-4 dark:border-gray-700">
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">Add New Requirement</h2>
@@ -317,25 +261,10 @@ const Requirements: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-2">
-                Title <span className="text-red-500">*</span>
-              </label>
-              <input 
-                type="text" 
-                className={`w-full rounded-md p-2 border ${formErrors.title ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white`}
-                placeholder="Requirement title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              {formErrors.title && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 mb-2">
                 Description <span className="text-red-500">*</span>
               </label>
               <textarea 
-                className={`w-full resize-none rounded-md p-2 border ${formErrors.description ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white`}
+                className={`w-full resize-none rounded-md p-2 border ${formErrors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                 placeholder="Requirement description"
                 rows={4}
                 value={description}
@@ -345,34 +274,61 @@ const Requirements: React.FC = () => {
                 <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>
               )}
             </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">
+                Domain <span className="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                className={`w-full rounded-md p-2 border ${formErrors.domain ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                placeholder="Domain (e.g. Cars, Finance, etc.)"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+              />
+              {formErrors.domain && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.domain}</p>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 dark:text-gray-300 mb-2">Classification</label>
+                <label className="block text-gray-700 dark:text-gray-300 mb-2">Priority</label>
                 <select 
                   className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                  value={classification}
-                  onChange={(e) => setClassification(e.target.value)}
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
                 >
-                  <option>Security</option>
-                  <option>Functionality</option>
-                  <option>Non-functional</option>
-                  <option>Functional</option>
+                  <option value="LOW">LOW</option>
+                  <option value="MEDIUM">MEDIUM</option>
+                  <option value="HIGH">HIGH</option>
+                  <option value="CRITICAL">CRITICAL</option>
                 </select>
               </div>
               <div>
-                <label className="block text-gray-700 dark:text-gray-300 mb-2">Module</label>
+                <label className="block text-gray-700 dark:text-gray-300 mb-2">Status</label>
                 <select 
                   className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                  value={module}
-                  onChange={(e) => setModule(e.target.value)}
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
                 >
-                  <option>Authentication</option>
-                  <option>File Management</option>
-                  <option>UI/UX</option>
-                  <option>Performance</option>
-                  <option>Security</option>
+                  <option value="DRAFT">DRAFT</option>
+                  <option value="REVIEW">REVIEW</option>
+                  <option value="APPROVED">APPROVED</option>
+                  <option value="REJECTED">REJECTED</option>
                 </select>
               </div>
+            </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Type</label>
+              <select 
+                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+              >
+                <option value="FUNCTIONAL">FUNCTIONAL</option>
+                <option value="NON_FUNCTIONAL">NON_FUNCTIONAL</option>
+                <option value="BUSINESS">BUSINESS</option>
+                <option value="TECHNICAL">TECHNICAL</option>
+              </select>
             </div>
           </div>
           <div className="flex justify-end mt-6">
@@ -395,7 +351,7 @@ const Requirements: React.FC = () => {
   };
 
   const ConfirmDeleteModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700">
         <div className="text-center mb-6">
           <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full inline-block mb-4">
@@ -556,13 +512,13 @@ const Requirements: React.FC = () => {
               </div>
             ) : (
               <table className="w-full table-fixed border-collapse">
-                <thead className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 text-gray-700 dark:text-gray-300">
+                <thead className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/40 dark:to-purple-900/40 text-gray-700 dark:text-gray-200">
                   <tr>
                     <th className="w-10 border border-gray-200 dark:border-gray-700 p-2 text-center">
                       <div className="flex items-center justify-center">
                         <input 
                           type="checkbox" 
-                          className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                          className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                           onChange={(e) => {
                             if (e.target.checked) {
                               setSelectedRequirements(filteredRequirements.map(req => req.id));
@@ -577,24 +533,24 @@ const Requirements: React.FC = () => {
                     <th className="w-1/6 border border-gray-200 dark:border-gray-700 p-2 text-left">
                       <div className="flex items-center">
                         ID
-                        <FaSort className="ml-1 text-gray-400 cursor-pointer hover:text-blue-500" />
+                        <FaSort className="ml-1 text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400" />
                       </div>
                     </th>
                     <th className="w-2/5 border border-gray-200 dark:border-gray-700 p-2 text-left">
                       <div className="flex items-center">
-                        Title/Description
-                        <FaSort className="ml-1 text-gray-400 cursor-pointer hover:text-blue-500" />
+                        Domain/Description
+                        <FaSort className="ml-1 text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400" />
                       </div>
                     </th>
                     <th className="w-1/6 border border-gray-200 dark:border-gray-700 p-2 text-left">
                       <div className="flex items-center">
-                        Classification
+                        Type
                         <FilterPopover />
                       </div>
                     </th>
                     <th className="w-1/6 border border-gray-200 dark:border-gray-700 p-2 text-left">
                       <div className="flex items-center">
-                        Module
+                        Priority
                         <FilterPopover />
                       </div>
                     </th>
@@ -609,7 +565,7 @@ const Requirements: React.FC = () => {
                       <td className="border border-gray-200 dark:border-gray-700 p-2 text-center">
                         <input 
                           type="checkbox" 
-                          className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                          className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                           checked={selectedRequirements.includes(req.id)}
                           onChange={() => toggleRequirementSelection(req.id)}
                         />
@@ -620,17 +576,17 @@ const Requirements: React.FC = () => {
                         </a>
                       </td>
                       <td className="border border-gray-200 dark:border-gray-700 p-2">
-                        <div className="font-medium">{req.title}</div>
+                        <div className="font-medium">Domain: {req.domain}</div>
                         <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{req.description}</div>
                       </td>
                       <td className="border border-gray-200 dark:border-gray-700 p-2">
                         <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                          {req.classification}
+                          {req.type}
                         </span>
                       </td>
                       <td className="border border-gray-200 dark:border-gray-700 p-2">
                         <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                          {req.module}
+                          {req.priority}
                         </span>
                       </td>
                       <td className="border border-gray-200 dark:border-gray-700 p-2">

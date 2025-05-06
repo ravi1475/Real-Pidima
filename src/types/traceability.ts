@@ -19,6 +19,9 @@ export interface RequirementDisplay {
   content: string;
   classification: string;
   module: string;
+  description?: string;
+  priority?: string;
+  status?: string;
 }
 
 export interface TestCaseDisplay {
@@ -29,6 +32,7 @@ export interface TestCaseDisplay {
   expected_outcome: string[] | string;
   classification: string;
   module: string;
+  id?: string; // Added for compatibility with new traceability UI
 }
 
 export interface Remediation {
@@ -43,10 +47,23 @@ export interface Remediation {
   updatedAt?: Date;
 }
 
+export interface TraceabilityMapping {
+  id?: string;
+  requirementId: string;
+  testcaseId: string;
+  description: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface TraceabilityItem {
   requirement: RequirementDisplay | null;
   testCases: TestCaseDisplay[];
+  /**
+   * @deprecated This field is no longer used in the updated UI
+   */
   remediation?: Remediation;
+  mappings?: TraceabilityMapping[]; // Added for new traceability UI
 }
 
 export type TraceabilityAction = 
@@ -55,4 +72,10 @@ export type TraceabilityAction =
   | { type: 'DELETE_TEST_CASE', payload: { requirementId: string, testCaseId: string } }
   | { type: 'ADD_REMEDIATION', payload: { requirementId: string, remediation: Remediation } }
   | { type: 'UPDATE_REMEDIATION', payload: { requirementId: string, remediation: Remediation } }
-  | { type: 'DELETE_REQUIREMENT', payload: { requirementId: string } }; 
+  | { type: 'DELETE_REQUIREMENT', payload: { requirementId: string } }
+  | { type: 'FETCH_START' }
+  | { type: 'FETCH_SUCCESS', payload: TraceabilityItem[] }
+  | { type: 'FETCH_ERROR', payload: string }
+  | { type: 'FETCH_MAPPINGS_SUCCESS', payload: TraceabilityMapping[] }
+  | { type: 'ADD_MAPPING', payload: TraceabilityMapping }
+  | { type: 'REMOVE_MAPPING', payload: string };

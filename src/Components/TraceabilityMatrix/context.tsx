@@ -1,18 +1,22 @@
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
-import { TraceabilityItem, TraceabilityAction, TestCaseDisplay, Remediation, RemediationStatus, RemediationSeverity } from '../../types/traceability';
+import { TraceabilityItem, TraceabilityAction, TestCaseDisplay, TraceabilityMapping } from '../../types/traceability';
+import { httpService } from '../../Auth Services/UserService';
+import { API } from '../../config/environment';
 
 // Define the context state type
 interface TraceabilityState {
   matrix: TraceabilityItem[];
   isLoading: boolean;
   error: string | null;
+  mappings: TraceabilityMapping[];
 }
 
 // Initial state
 const initialState: TraceabilityState = {
   matrix: [],
   isLoading: true,
-  error: null
+  error: null,
+  mappings: []
 };
 
 // Create the context
@@ -21,22 +25,25 @@ const TraceabilityContext = createContext<{
   dispatch: React.Dispatch<TraceabilityAction>;
   addTestCase: (requirementId: string, testCase: TestCaseDisplay) => Promise<void>;
   deleteTestCase: (requirementId: string, testCaseId: string) => Promise<void>;
-  addRemediation: (requirementId: string, remediation: Remediation) => Promise<void>;
-  updateRemediation: (requirementId: string, remediation: Remediation) => Promise<void>;
   deleteRequirement: (requirementId: string) => Promise<void>;
   refreshMatrix: () => Promise<void>;
+  fetchMappings: () => Promise<void>;
+  createMapping: (mapping: TraceabilityMapping) => Promise<void>;
+  deleteMapping: (id: string) => Promise<void>;
 }>({
   state: initialState,
   dispatch: () => {},
   addTestCase: async () => {},
   deleteTestCase: async () => {},
-  addRemediation: async () => {},
-  updateRemediation: async () => {},
   deleteRequirement: async () => {},
-  refreshMatrix: async () => {}
+  refreshMatrix: async () => {},
+  fetchMappings: async () => {},
+  createMapping: async () => {},
+  deleteMapping: async () => {}
 });
 
-// Mock data for development
+// Mock data for development - commented out to avoid unused variable warnings
+/* 
 const mockMatrixData: TraceabilityItem[] = [
   {
     requirement: {
@@ -64,16 +71,7 @@ const mockMatrixData: TraceabilityItem[] = [
         classification: "Functional",
         module: "Authentication"
       }
-    ],
-    remediation: {
-      id: "REM-001",
-      req_id: "REQ-001",
-      description: "Update login error messaging to be more descriptive",
-      status: RemediationStatus.IN_PROGRESS,
-      severity: RemediationSeverity.MEDIUM,
-      assignedTo: "John Doe",
-      createdAt: new Date("2023-09-15")
-    }
+    ]
   },
   {
     requirement: {
@@ -111,17 +109,10 @@ const mockMatrixData: TraceabilityItem[] = [
         classification: "Security",
         module: "Authentication"
       }
-    ],
-    remediation: {
-      id: "REM-002",
-      req_id: "REQ-003",
-      description: "Upgrade hashing algorithm to latest standard",
-      status: RemediationStatus.PENDING,
-      severity: RemediationSeverity.HIGH,
-      createdAt: new Date("2023-09-10")
-    }
+    ]
   }
 ];
+*/
 
 // Reducer function
 function traceabilityReducer(state: TraceabilityState, action: TraceabilityAction): TraceabilityState {
@@ -132,6 +123,27 @@ function traceabilityReducer(state: TraceabilityState, action: TraceabilityActio
         matrix: action.payload,
         isLoading: false,
         error: null
+      };
+      
+    case 'FETCH_START':
+      return { ...state, isLoading: true, error: null };
+      
+    case 'FETCH_SUCCESS':
+      return { ...state, isLoading: false, matrix: action.payload, error: null };
+      
+    case 'FETCH_ERROR':
+      return { ...state, isLoading: false, error: action.payload };
+      
+    case 'FETCH_MAPPINGS_SUCCESS':
+      return { ...state, mappings: action.payload };
+      
+    case 'ADD_MAPPING':
+      return { ...state, mappings: [...state.mappings, action.payload] };
+      
+    case 'REMOVE_MAPPING':
+      return {
+        ...state,
+        mappings: state.mappings.filter(mapping => mapping.id !== action.payload)
       };
       
     case 'ADD_TEST_CASE': {
@@ -168,24 +180,6 @@ function traceabilityReducer(state: TraceabilityState, action: TraceabilityActio
       };
     }
     
-    case 'ADD_REMEDIATION': 
-    case 'UPDATE_REMEDIATION': {
-      const { requirementId, remediation } = action.payload;
-      
-      return {
-        ...state,
-        matrix: state.matrix.map(item => {
-          if (item.requirement && item.requirement.req_id === requirementId) {
-            return {
-              ...item,
-              remediation
-            };
-          }
-          return item;
-        })
-      };
-    }
-    
     case 'DELETE_REQUIREMENT': {
       const { requirementId } = action.payload;
       
@@ -206,49 +200,40 @@ function traceabilityReducer(state: TraceabilityState, action: TraceabilityActio
 export const TraceabilityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(traceabilityReducer, initialState);
   
-  // Fetch the traceability matrix
-  const refreshMatrix = async () => {
+  // Fetch the traceability matrix data
+  const fetchTraceabilityMatrix = async () => {
+    dispatch({ type: 'FETCH_START' });
     try {
-      // Simulating API loading state
-      dispatch({ type: 'SET_MATRIX', payload: [] });
+      // First, fetch all requirements
+      const requirementsResponse = await httpService.get(API.PROJECT_REQUIREMENTS);
       
-      // BACKEND API CALL - COMMENTED OUT FOR NOW
-      // const response = await fetch("/api/traceability-matrix", {
-      //   method: "GET",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Cache-Control": "no-cache",
-      //   },
-      // });
-      //
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! status: ${response.status}`);
-      // }
-      //
-      // const data = await response.json();
+      // Create matrix items from requirements
+      // In a real app, you would fetch test cases associated with each requirement
+      const matrixItems: TraceabilityItem[] = requirementsResponse.map((req: any) => ({
+        requirement: {
+          req_id: req.id,
+          content: req.description || '',
+          classification: req.type || 'FUNCTIONAL',
+          module: req.domain || 'General',
+          // Add the additional fields that we use in our updated UI
+          description: req.description,
+          priority: req.priority,
+          status: req.status
+        },
+        testCases: [] // Will be populated from the backend
+      }));
       
-      // Use mock data instead of API response
-      setTimeout(() => {
-        const data = mockMatrixData;
-        
-        // Ensure we always have a valid array
-        const matrix = Array.isArray(data) ? data : [];
-        dispatch({ type: 'SET_MATRIX', payload: matrix });
-      }, 800); // Simulate network delay
-      
-    } catch (error) {
-      console.error('Error fetching matrix:', error);
-      dispatch({
-        type: 'SET_MATRIX',
-        payload: []
-      });
-      // Set error state if needed
+      dispatch({ type: 'FETCH_SUCCESS', payload: matrixItems });
+    } catch (error: any) {
+      console.error('Error fetching traceability matrix:', error);
+      dispatch({ type: 'FETCH_ERROR', payload: error.message || 'Failed to fetch traceability matrix' });
     }
   };
   
   // Load initial data
   useEffect(() => {
-    refreshMatrix();
+    fetchTraceabilityMatrix();
+    fetchMappings();
   }, []);
   
   // Action handlers
@@ -282,36 +267,6 @@ export const TraceabilityProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   };
   
-  const addRemediation = async (requirementId: string, remediation: Remediation) => {
-    try {
-      // BACKEND API CALL - COMMENTED OUT FOR NOW
-      // Await API call here
-      
-      // For now, just update the state directly
-      dispatch({ 
-        type: 'ADD_REMEDIATION', 
-        payload: { requirementId, remediation } 
-      });
-    } catch (error) {
-      console.error('Error adding remediation:', error);
-    }
-  };
-  
-  const updateRemediation = async (requirementId: string, remediation: Remediation) => {
-    try {
-      // BACKEND API CALL - COMMENTED OUT FOR NOW
-      // Await API call here
-      
-      // For now, just update the state directly
-      dispatch({ 
-        type: 'UPDATE_REMEDIATION', 
-        payload: { requirementId, remediation } 
-      });
-    } catch (error) {
-      console.error('Error updating remediation:', error);
-    }
-  };
-  
   const deleteRequirement = async (requirementId: string) => {
     try {
       // BACKEND API CALL - COMMENTED OUT FOR NOW
@@ -326,17 +281,51 @@ export const TraceabilityProvider: React.FC<{ children: ReactNode }> = ({ childr
       console.error('Error deleting requirement:', error);
     }
   };
-  
+
+  // Fetch all traceability mappings
+  const fetchMappings = async () => {
+    try {
+      const mappings = await httpService.get(API.TRACEABILITY);
+      dispatch({ type: 'FETCH_MAPPINGS_SUCCESS', payload: mappings });
+    } catch (error: any) {
+      console.error('Error fetching traceability mappings:', error);
+      // You might want to dispatch an error action here
+    }
+  };
+
+  // Create a new traceability mapping
+  const createMapping = async (mapping: TraceabilityMapping) => {
+    try {
+      const newMapping = await httpService.post(API.TRACEABILITY, mapping);
+      dispatch({ type: 'ADD_MAPPING', payload: newMapping });
+    } catch (error: any) {
+      console.error('Error creating traceability mapping:', error);
+      throw error;
+    }
+  };
+
+  // Delete a traceability mapping
+  const deleteMapping = async (id: string) => {
+    try {
+      await httpService.delete(`${API.TRACEABILITY}/${id}`);
+      dispatch({ type: 'REMOVE_MAPPING', payload: id });
+    } catch (error: any) {
+      console.error('Error deleting traceability mapping:', error);
+      throw error;
+    }
+  };
+
   return (
     <TraceabilityContext.Provider value={{ 
       state, 
       dispatch,
       addTestCase,
       deleteTestCase,
-      addRemediation,
-      updateRemediation,
       deleteRequirement,
-      refreshMatrix
+      refreshMatrix: fetchTraceabilityMatrix,
+      fetchMappings,
+      createMapping,
+      deleteMapping
     }}>
       {children}
     </TraceabilityContext.Provider>
